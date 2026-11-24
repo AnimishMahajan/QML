@@ -51,11 +51,11 @@ def main():
     # =========================================================================
     # Step 1: Data Preparation & Audit
     # =========================================================================
-    # if not args.skip_prep and not manifest_path.exists():
-    #     run_step([sys.executable, "scripts/01_prepare_data.py"], "Prepare Dataset Crops (VOC -> 224x224 crops)")
-    #     run_step([sys.executable, "scripts/02_audit_data.py"], "Audit Dataset & Verify Integrity")
-    # else:
-    #     print(f"\n[INFO] Dataset manifest found at '{manifest_path}'. Skipping data prep.")
+    if not args.skip_prep and not manifest_path.exists():
+        run_step([sys.executable, "scripts/01_prepare_data.py"], "Prepare Dataset Crops (VOC -> 224x224 crops)")
+        run_step([sys.executable, "scripts/02_audit_data.py"], "Audit Dataset & Verify Integrity")
+    else:
+        print(f"\n[INFO] Dataset manifest found at '{manifest_path}'. Skipping data prep.")
 
     # =========================================================================
     # Step 2: Baseline Triplet Model Evaluation & Training
