@@ -1,0 +1,34 @@
+# AQPM-QDML: Adaptive Quantum Prototype-Metric Deep Learning
+method: "aqpm"
+data_dir: "data/processed"
+run_dir: "results/runs/aqpm_s0"
+seed: 0
+epochs: 40
+
+# PK Sampler: P=5 classes, K=6 instances -> batch size 30
+p: 5
+k: 6
+
+# Architecture
+embed_dim: 32
+n_qubits: 6
+n_layers: 2
+slice_mode: "learned"          # F5 Fix: learned projection + BN + tanh
+entangle_every_layer: true     # F1 Fix: nearest-neighbor CNOT chain inside layer loop
+use_classical_head: false
+
+# AQPM Loss Hyperparameters
+m0: 0.2
+gamma: 0.3
+mp: 0.5
+lambda_p: 0.5
+lambda_sep: 0.5
+lambda_r: 0.01                 # Penalty on raw reliability to prevent saturation
+margin_form: "ambiguity"       # F4 Fix: m_0 + gamma * S_hard
+normalize_reliability: true    # F3 Fix: normalize reliability by batch mean
+use_reliability_weight: true
+
+# Multi-Group Optimizer (F9 Fix)
+lr_classical: 0.0003           # 3e-4 for pretrained ResNet-18
+lr_quantum: 0.03               # 3e-2 for randomly initialized circuit weights
+warmup_epochs: 2

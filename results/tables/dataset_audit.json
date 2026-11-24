@@ -1,0 +1,12 @@
+{
+  "n_crops": 4114,
+  "n_source_frames": 3631,
+  "is_leak_free": true,
+  "all_classes_present_all_splits": true,
+  "small_defect_percentage": 20.807000486144872,
+  "split_ratio": {
+    "train": 0.6968886728245017,
+    "val": 0.2017501215362178,
+    "test": 0.1013612056392805
+  }
+}

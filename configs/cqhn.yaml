@@ -1,0 +1,33 @@
+# CQHN-QDML: Condition-aware Quantum Hard-Negative Deep Metric Learning
+method: "cqhn"
+data_dir: "data/processed"
+run_dir: "results/runs/cqhn_s0"
+seed: 0
+epochs: 40
+
+# PK Sampler: P=5 classes, K=6 instances -> batch size 30
+p: 5
+k: 6
+
+# Architecture
+embed_dim: 32
+n_qubits: 6
+n_layers: 2
+slice_mode: "learned"
+entangle_every_layer: true
+use_classical_head: false
+
+# CQHN Loss Hyperparameters
+m0: 0.2
+gamma: 0.3
+tau_a: 0.5
+lambda_inv: 1.0
+inv_warmup_epochs: 5           # F7 Fix: 5-epoch linear warmup to prevent collapse
+lambda_struct: 0.1
+lambda_reg: 0.05               # F11 Fix: regularizer on un-normalized read-out z_raw
+positive_mode: "mixed"         # F6 Fix: half mined same-class positive, half self-view
+
+# Multi-Group Optimizer (F9 Fix)
+lr_classical: 0.0003
+lr_quantum: 0.03
+warmup_epochs: 2

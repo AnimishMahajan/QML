@@ -1,0 +1,20 @@
+# Classical Metric Learning Baseline (B2: Batch-Hard Triplet)
+method: "triplet"
+data_dir: "data/processed"
+run_dir: "results/runs/triplet_s0"
+seed: 0
+epochs: 40
+
+# PK Sampler: P=5 classes, K=6 instances -> batch size 30
+p: 5
+k: 6
+
+# Architecture
+embed_dim: 32
+pretrained: true
+use_classical_head: true
+
+# Optimizer
+lr_classical: 0.0003
+warmup_epochs: 2
+margin: 0.2
