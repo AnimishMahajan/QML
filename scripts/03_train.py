@@ -76,16 +76,16 @@ def build_loss(method: str, cfg: dict) -> torch.nn.Module:
 def main():
     parser = argparse.ArgumentParser(description="Train QDML or Baseline model")
     parser.add_argument("--config", type=str, default=None, help="Path to YAML config")
-    parser.add_argument("--method", type=str, default="aqpm", help="aqpm, cqhn, triplet, contrastive, supcon, cosface")
-    parser.add_argument("--data", type=str, default="data/processed")
-    parser.add_argument("--run-dir", type=str, default="results/runs/latest")
-    parser.add_argument("--seed", type=int, default=0)
-    parser.add_argument("--epochs", type=int, default=40)
-    parser.add_argument("--batch-k", type=int, default=6)
-    parser.add_argument("--n-qubits", type=int, default=6)
-    parser.add_argument("--n-layers", type=int, default=2)
-    parser.add_argument("--slice-mode", type=str, default="learned")
-    parser.add_argument("--use-classical-head", action="store_true")
+    parser.add_argument("--method", type=str, default=None, help="aqpm, cqhn, triplet, contrastive, supcon, cosface")
+    parser.add_argument("--data", type=str, default=None)
+    parser.add_argument("--run-dir", type=str, default=None)
+    parser.add_argument("--seed", type=int, default=None)
+    parser.add_argument("--epochs", type=int, default=None)
+    parser.add_argument("--batch-k", type=int, default=None)
+    parser.add_argument("--n-qubits", type=int, default=None)
+    parser.add_argument("--n-layers", type=int, default=None)
+    parser.add_argument("--slice-mode", type=str, default=None)
+    parser.add_argument("--use-classical-head", action="store_true", default=None)
 
     args = parser.parse_args()
 
@@ -95,17 +95,22 @@ def main():
         with open(args.config, "r") as f:
             cfg = yaml.safe_load(f)
 
-    # CLI overrides
-    method = cfg.get("method", args.method)
-    seed = cfg.get("seed", args.seed)
-    epochs = cfg.get("epochs", args.epochs)
-    data_dir = Path(cfg.get("data_dir", args.data))
-    run_dir = Path(cfg.get("run_dir", args.run_dir))
+    # CLI arguments take precedence over config file values
+    method = args.method if args.method is not None else cfg.get("method", "aqpm")
+    seed = args.seed if args.seed is not None else cfg.get("seed", 0)
+    epochs = args.epochs if args.epochs is not None else cfg.get("epochs", 40)
+    data_dir = Path(args.data if args.data is not None else cfg.get("data_dir", "data/processed"))
+    run_dir = Path(args.run_dir if args.run_dir is not None else cfg.get("run_dir", "results/runs/latest"))
     run_dir.mkdir(parents=True, exist_ok=True)
+
+    n_qubits = args.n_qubits if args.n_qubits is not None else cfg.get("n_qubits", 6)
+    n_layers = args.n_layers if args.n_layers is not None else cfg.get("n_layers", 2)
+    slice_mode = args.slice_mode if args.slice_mode is not None else cfg.get("slice_mode", "learned")
+    use_classical_head = args.use_classical_head if args.use_classical_head is not None else cfg.get("use_classical_head", False)
 
     set_seed(seed)
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    print(f"Executing run for method='{method}' on device='{device}' (seed={seed})")
+    print(f"Executing run for method='{method}' on device='{device}' (seed={seed}, epochs={epochs})")
 
     manifest_path = data_dir / "manifest.csv"
     dual_views = (method.lower() == "cqhn")
@@ -128,7 +133,7 @@ def main():
 
     # PK Sampler: P=5 classes, K=6 instances -> Batch 30
     p = cfg.get("p", 5)
-    k = cfg.get("k", args.batch_k)
+    k = args.batch_k if args.batch_k is not None else cfg.get("k", 6)
     sampler = PKSampler(train_dataset.df["label"].values, p=p, k=k, seed=seed)
     train_loader = DataLoader(train_dataset, batch_sampler=sampler, num_workers=0)
     val_loader = DataLoader(val_dataset, batch_size=32, shuffle=False, num_workers=0)
@@ -136,15 +141,34 @@ def main():
     # Model
     model = QDMLNet(
         embed_dim=cfg.get("embed_dim", 32),
-        n_qubits=cfg.get("n_qubits", args.n_qubits),
-        n_layers=cfg.get("n_layers", args.n_layers),
+        n_qubits=n_qubits,
+        n_layers=n_layers,
         pretrained=cfg.get("pretrained", True),
-        slice_mode=cfg.get("slice_mode", args.slice_mode),
+        slice_mode=slice_mode,
         entangle_every_layer=cfg.get("entangle_every_layer", True),
-        use_classical_head=cfg.get("use_classical_head", args.use_classical_head),
+        use_classical_head=use_classical_head,
     )
 
-    loss_fn = build_loss(method, {**cfg, "n_qubits": args.n_qubits, "n_layers": args.n_layers})
+    loss_cfg = {**cfg, "n_qubits": n_qubits, "n_layers": n_layers}
+    if epochs < 5 and "inv_warmup_epochs" in loss_cfg:
+        loss_cfg["inv_warmup_epochs"] = min(loss_cfg["inv_warmup_epochs"], max(1, epochs - 1))
+
+    loss_fn = build_loss(method, loss_cfg)
+
+    warmup_epochs = min(int(cfg.get("warmup_epochs", 2)), max(0, epochs - 1))
+
+    # Save initial config so it exists even if training is interrupted
+    init_config = {
+        "method": method,
+        "seed": seed,
+        "epochs": epochs,
+        "n_qubits": n_qubits,
+        "n_layers": n_layers,
+        "slice_mode": slice_mode,
+        "use_classical_head": use_classical_head,
+    }
+    with open(run_dir / "config.json", "w") as f:
+        json.dump(init_config, f, indent=2)
 
     trainer = Trainer(
         model=model,
@@ -156,7 +180,7 @@ def main():
         epochs=epochs,
         lr_classical=float(cfg.get("lr_classical", 3e-4)),
         lr_quantum=float(cfg.get("lr_quantum", 3e-2)),
-        warmup_epochs=int(cfg.get("warmup_epochs", 2)),
+        warmup_epochs=warmup_epochs,
     )
 
     fit_results = trainer.fit()
@@ -166,10 +190,10 @@ def main():
         "method": method,
         "seed": seed,
         "epochs": epochs,
-        "n_qubits": cfg.get("n_qubits", args.n_qubits),
-        "n_layers": cfg.get("n_layers", args.n_layers),
-        "slice_mode": cfg.get("slice_mode", args.slice_mode),
-        "use_classical_head": cfg.get("use_classical_head", args.use_classical_head),
+        "n_qubits": n_qubits,
+        "n_layers": n_layers,
+        "slice_mode": slice_mode,
+        "use_classical_head": use_classical_head,
         "fit_results": fit_results,
     }
     with open(run_dir / "config.json", "w") as f:

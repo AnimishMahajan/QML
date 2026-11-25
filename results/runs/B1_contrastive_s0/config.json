@@ -1,0 +1,13 @@
+{
+  "method": "contrastive",
+  "seed": 0,
+  "epochs": 2,
+  "n_qubits": 6,
+  "n_layers": 2,
+  "slice_mode": "learned",
+  "use_classical_head": true,
+  "fit_results": {
+    "best_val_mAP": 0.9470201291580959,
+    "training_time_sec": 32.22399973869324
+  }
+}

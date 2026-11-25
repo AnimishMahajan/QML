@@ -1,0 +1,13 @@
+{
+  "method": "supcon",
+  "seed": 0,
+  "epochs": 2,
+  "n_qubits": 6,
+  "n_layers": 2,
+  "slice_mode": "learned",
+  "use_classical_head": true,
+  "fit_results": {
+    "best_val_mAP": 0.9357580005098005,
+    "training_time_sec": 31.008167028427124
+  }
+}

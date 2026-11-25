@@ -1,0 +1,9 @@
+{
+  "method": "cqhn",
+  "seed": 0,
+  "epochs": 2,
+  "n_qubits": 6,
+  "n_layers": 2,
+  "slice_mode": "learned",
+  "use_classical_head": false
+}

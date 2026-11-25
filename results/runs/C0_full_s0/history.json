@@ -1,0 +1,38 @@
+[
+  {
+    "epoch": 1,
+    "train_loss_hn": 0.07926175785312232,
+    "train_loss_inv": 0.25919732145572966,
+    "train_loss_struct": 0.9346705687673469,
+    "train_loss_reg": 0.06175126223579833,
+    "train_total_loss": 0.22765584478252812,
+    "train_lambda_inv": 0.19999999999999993,
+    "train_mean_D_pos": 0.40847388992184086,
+    "train_mean_D_neg": 0.9060471879808526,
+    "train_valid_negatives": 30.0,
+    "train_mean_ambiguity": 0.5418017886186901,
+    "val_Recall@1": 0.9265060240963855,
+    "val_Recall@5": 0.9710843373493976,
+    "val_Recall@10": 0.9759036144578314,
+    "val_mAP": 0.8804514988661396,
+    "val_mAP@R": 0.8048033742184354
+  },
+  {
+    "epoch": 2,
+    "train_loss_hn": 0.033121701719171955,
+    "train_loss_inv": 0.07374683475415958,
+    "train_loss_struct": 0.3267101240785498,
+    "train_loss_reg": 0.01863198629825523,
+    "train_total_loss": 0.09622304886579514,
+    "train_lambda_inv": 0.39999999999999986,
+    "train_mean_D_pos": 0.1592613852337787,
+    "train_mean_D_neg": 0.885140083338085,
+    "train_valid_negatives": 30.0,
+    "train_mean_ambiguity": 0.37335384111655384,
+    "val_Recall@1": 0.9397590361445783,
+    "val_Recall@5": 0.9759036144578314,
+    "val_Recall@10": 0.980722891566265,
+    "val_mAP": 0.8764114468272027,
+    "val_mAP@R": 0.8048740992599743
+  }
+]

@@ -36,18 +36,8 @@ def main():
         with open(cfg_path, "r") as f:
             cfg = json.load(f)
 
-    model = QDMLNet(
-        embed_dim=cfg.get("embed_dim", 32),
-        n_qubits=cfg.get("n_qubits", 6),
-        n_layers=cfg.get("n_layers", 2),
-        pretrained=False,
-        use_classical_head=cfg.get("use_classical_head", True)
-    ).to(device)
-
     ckpt_path = run_dir / "best.pt" if (run_dir / "best.pt").exists() else run_dir / "last.pt"
-    ckpt = torch.load(ckpt_path, map_location=device)
-    model.load_state_dict(ckpt["model"])
-    model.eval()
+    model = QDMLNet.load_from_checkpoint(ckpt_path, device=device, config_dict=cfg)
 
     train_ds = DefectCropDataset(manifest_path, split="train", is_training=False)
     test_ds = DefectCropDataset(manifest_path, split="test", is_training=False)

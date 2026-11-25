@@ -62,4 +62,3 @@ data/*.parquet
 
 **/processed/
 dataset/Substation Equipment Appearance Defect Dataset
-*.pt

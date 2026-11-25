@@ -1,0 +1,17 @@
+{
+  "B8_vqc_head": {
+    "classical_mAP_mean": 0.9359077420772003,
+    "classical_mAP_std": 0.0,
+    "quantum_mAP_mean": 0.7936080285374355,
+    "quantum_mAP_std": 0.0,
+    "raw_seeds": [
+      {
+        "seed": 0,
+        "classical_mAP": 0.9359077420772003,
+        "classical_R1": 0.9448441247002398,
+        "quantum_mAP": 0.7936080285374355,
+        "quantum_R1": 0.9136690647482014
+      }
+    ]
+  }
+}

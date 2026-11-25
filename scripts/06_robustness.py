@@ -156,20 +156,10 @@ def main():
             with open(cfg_path, "r") as f:
                 cfg = json.load(f)
 
-        model = QDMLNet(
-            embed_dim=cfg.get("embed_dim", 32),
-            n_qubits=cfg.get("n_qubits", 6),
-            n_layers=cfg.get("n_layers", 2),
-            pretrained=False,
-            slice_mode=cfg.get("slice_mode", "learned"),
-            use_classical_head=cfg.get("use_classical_head", False),
-        ).to(device)
-
         ckpt_path = rpath / "best.pt"
         if not ckpt_path.exists():
             ckpt_path = rpath / "last.pt"
-        ckpt = torch.load(ckpt_path, map_location=device)
-        model.load_state_dict(ckpt["model"])
+        model = QDMLNet.load_from_checkpoint(ckpt_path, device=device, config_dict=cfg)
 
         print(f"Running robustness evaluation for {name} on {device}...")
         rob = evaluate_model_robustness(model, manifest_path, device)

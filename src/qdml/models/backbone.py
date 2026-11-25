@@ -3,7 +3,8 @@ Hybrid Classical-Quantum Backbone: ResNet-18 + QuantumSlice + VQC.
 """
 
 from __future__ import annotations
-from typing import Dict, Literal, Optional, Tuple
+from typing import Dict, Literal, Optional, Tuple, Union
+from pathlib import Path
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -172,3 +173,55 @@ class QDMLNet(nn.Module):
             {"params": classical_params, "lr": lr_backbone},
             {"params": quantum_params, "lr": lr_quantum},
         ]
+
+    @classmethod
+    def load_from_checkpoint(
+        cls,
+        ckpt_path: Union[str, Path],
+        device: torch.device = torch.device("cpu"),
+        config_dict: Optional[Dict] = None,
+    ) -> "QDMLNet":
+        """
+        Robustly loads a QDMLNet model by auto-detecting quantum vs classical head
+        and circuit dimensions directly from the checkpoint weights.
+        """
+        if isinstance(ckpt_path, str):
+            ckpt_path = Path(ckpt_path)
+
+        cfg = config_dict or {}
+        ckpt = torch.load(ckpt_path, map_location=device)
+        state_dict = ckpt["model"] if isinstance(ckpt, dict) and "model" in ckpt else ckpt
+
+        # Auto-detect whether checkpoint is classical control or quantum head
+        has_classical = any(k.startswith("classical_control") for k in state_dict.keys())
+        has_quantum = any(k.startswith("vqc") or k.startswith("quantum_slice") for k in state_dict.keys())
+
+        if has_classical and not has_quantum:
+            use_classical_head = True
+        elif has_quantum:
+            use_classical_head = False
+        else:
+            use_classical_head = cfg.get("use_classical_head", False)
+
+        embed_dim = cfg.get("embed_dim", 32)
+        slice_mode = cfg.get("slice_mode", "learned")
+        n_qubits = cfg.get("n_qubits", 6)
+        n_layers = cfg.get("n_layers", 2)
+
+        if "vqc.weights" in state_dict:
+            vqc_shape = state_dict["vqc.weights"].shape
+            n_layers = vqc_shape[0]
+            n_qubits = vqc_shape[1]
+
+        model = cls(
+            embed_dim=embed_dim,
+            n_qubits=n_qubits,
+            n_layers=n_layers,
+            pretrained=False,
+            slice_mode=slice_mode,
+            use_classical_head=use_classical_head,
+        ).to(device)
+
+        model.load_state_dict(state_dict)
+        model.eval()
+        return model

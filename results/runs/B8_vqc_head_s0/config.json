@@ -1,0 +1,13 @@
+{
+  "method": "triplet",
+  "seed": 0,
+  "epochs": 2,
+  "n_qubits": 6,
+  "n_layers": 2,
+  "slice_mode": "learned",
+  "use_classical_head": false,
+  "fit_results": {
+    "best_val_mAP": 0.9291377657618461,
+    "training_time_sec": 34.55763363838196
+  }
+}

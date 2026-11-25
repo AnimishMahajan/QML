@@ -1,0 +1,32 @@
+{
+  "C0_full": {
+    "classical_mAP_mean": 0.8963922354063469,
+    "classical_mAP_std": 0.0,
+    "quantum_mAP_mean": 0.8347343559683573,
+    "quantum_mAP_std": 0.0,
+    "raw_seeds": [
+      {
+        "seed": 0,
+        "classical_mAP": 0.8963922354063469,
+        "classical_R1": 0.9400479616306955,
+        "quantum_mAP": 0.8347343559683573,
+        "quantum_R1": 0.920863309352518
+      }
+    ]
+  },
+  "C6_classical_control": {
+    "classical_mAP_mean": 0.9265237491852089,
+    "classical_mAP_std": 0.0,
+    "quantum_mAP_mean": 0.9265237491852089,
+    "quantum_mAP_std": 0.0,
+    "raw_seeds": [
+      {
+        "seed": 0,
+        "classical_mAP": 0.9265237491852089,
+        "classical_R1": 0.9328537170263789,
+        "quantum_mAP": 0.9265237491852089,
+        "quantum_R1": 0.9328537170263789
+      }
+    ]
+  }
+}
